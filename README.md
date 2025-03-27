@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Audible_Insights
 Intelligent Book Recommendation System
 =======
@@ -49,4 +49,15 @@ Refer to `deployment/aws_setup.md` for deployment steps.
 - **Streamlit**
 - **AWS (EC2, Elastic Beanstalk)**
 - **Docker**
->>>>>>> 71128a7 (Initial commit - Added Streamlit app for Audible Insights)
+
+## Exploratory Data Analysis (EDA)
+<img width="1652" alt="image" src="https://github.com/user-attachments/assets/18a53c18-c3a9-4335-bb60-bd785d862c69" />
+
+<img width="1591" alt="image" src="https://github.com/user-attachments/assets/a9054a43-cf62-4a7c-938e-da4861949644" />
+
+<img width="1045" alt="image" src="https://github.com/user-attachments/assets/94e0634e-6f38-4c1e-90c1-ee8ec21335fb" />
+
+
+## Streamlit App
+<img width="1674" alt="image" src="https://github.com/user-attachments/assets/b7c04717-8d2f-486c-a2bd-9afe09d9ccb7" />
+
