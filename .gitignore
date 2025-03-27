@@ -1,0 +1,28 @@
+# Ignore dataset files
+data/raw/*
+data/processed/*
+
+# Ignore model files
+models/*.pkl
+
+# Ignore log files
+logs/*
+
+# Ignore virtual environments
+venv/
+.env/
+
+# Ignore cache files
+__pycache__/
+*.pyc
+.DS_Store
+
+# Ignore Jupyter Notebook checkpoints
+notebooks/.ipynb_checkpoints/
+
+# Ignore AWS deployment files
+deployment/*.pem
+models/*.pkl
+models/*.bin
+__pycache__/
+*.csv

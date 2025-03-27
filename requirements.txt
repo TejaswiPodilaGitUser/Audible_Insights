@@ -1,0 +1,27 @@
+# Core Libraries
+numpy
+pandas
+scikit-learn
+scipy
+
+# NLP & Text Processing
+nltk
+spacy
+gensim
+
+# Machine Learning & Clustering
+xgboost
+lightgbm
+
+# Model Persistence
+joblib
+
+# Streamlit App
+streamlit
+
+# AWS Deployment
+boto3
+
+# Misc
+matplotlib
+seaborn
