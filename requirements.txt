@@ -25,3 +25,6 @@ boto3
 # Misc
 matplotlib
 seaborn
+
+fuzzywuzzy
+python-Levenshtein

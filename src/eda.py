@@ -7,7 +7,7 @@ def main():
 
 
     # Load Data
-    df = pd.read_csv("data/merged/audible_catalog_merged.csv")
+    df = pd.read_csv("data/processed/audible_catalog_processed.csv")
 
     # Ensure correct column name
     df["Genre"] = df["Genres"].fillna("Unknown")
