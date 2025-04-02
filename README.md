@@ -59,6 +59,13 @@ Refer to `deployment/aws_setup.md` for deployment steps.
 
 
 ## Streamlit App
+
 <img width="1674" alt="image" src="https://github.com/user-attachments/assets/b7c04717-8d2f-486c-a2bd-9afe09d9ccb7" />
 
+
+<img width="1636" alt="image" src="https://github.com/user-attachments/assets/79a59242-60f1-458c-8a32-96285b2c639c" />
+
+
 ## AWS 
+<img width="1702" alt="AWS Port Connected" src="https://github.com/user-attachments/assets/e1886fe8-02fa-4381-be1d-54315504232c" />
+
