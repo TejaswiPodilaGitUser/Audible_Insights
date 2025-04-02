@@ -48,7 +48,7 @@ Refer to `deployment/aws_setup.md` for deployment steps.
 - **NLP (TF-IDF, Word2Vec)**
 - **Streamlit**
 - **AWS (EC2, Elastic Beanstalk)**
-- **Docker**
+
 
 ## Exploratory Data Analysis (EDA)
 <img width="1652" alt="image" src="https://github.com/user-attachments/assets/18a53c18-c3a9-4335-bb60-bd785d862c69" />
@@ -61,3 +61,4 @@ Refer to `deployment/aws_setup.md` for deployment steps.
 ## Streamlit App
 <img width="1674" alt="image" src="https://github.com/user-attachments/assets/b7c04717-8d2f-486c-a2bd-9afe09d9ccb7" />
 
+## AWS 

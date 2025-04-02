@@ -25,4 +25,4 @@ deployment/*.pem
 models/*.pkl
 models/*.bin
 __pycache__/
-*.csv
+

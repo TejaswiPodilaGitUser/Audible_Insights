@@ -48,8 +48,20 @@ def main():
     ]
     popular_genre_books = shorten_labels(popular_genre_books, "Book Name")
 
+    col1, spacer, col2 = st.columns([1, 0.1, 1.2])
+    with col1:
+        # Display Regression Model Metrics
+        st.subheader("📈 Regression Model Performance Metrics")
+        regression_metrics = pd.read_csv("results/regression_tuned_metrics.csv")
+        st.table(regression_metrics)
+    with col2:
+        # Display Clustering Model Metrics
+        st.subheader("🔍 Clustering Model Evaluation Metrics")
+        clustering_metrics = pd.read_csv("results/model_metrics.csv")
+        st.table(clustering_metrics)
+
     # Display top genres and authors
-    col1, spacer, col2 = st.columns([1, 0.1, 1])
+    col1, spacer, col2 = st.columns([1, 0.1, 1.2])
     with col1:
         st.subheader("🏆 Top 5 Genres by Review Count")
         st.table(top_5_genres)
