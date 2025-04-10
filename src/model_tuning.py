@@ -1,90 +1,119 @@
 import pandas as pd
 import numpy as np
 import pickle
+from sklearn.metrics import mean_squared_error, silhouette_score
 import os
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_squared_error
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from xgboost import XGBRegressor
-from lightgbm import LGBMRegressor
 
-# ✅ Paths
-file_path = "data/processed/processed_audible_catalog_merged.csv"
-best_model_path = "models/best_tuned_model.pkl"
-scaler_path = "models/scaler.pkl"
+# File paths
+clustered_data_path = "data/processed/clustered_books.csv"
+cosine_sim_path = "models/cosine_similarity.pkl"
+tfidf_vectorizer_path = "models/tfidf_vectorizer.pkl"
+metrics_output_path = "evaluation/metrics_summary.csv"
 
-# ✅ Load Data
-data = pd.read_csv(file_path)
+def evaluate_models():
+    print("📦 Loading dataset and models...")
 
-# ✅ Print available columns
-print("📌 Available Columns in Dataset:\n", data.columns.tolist())
+    # Load clustered data
+    data = pd.read_csv(clustered_data_path)
 
-# ✅ Feature Selection (Check Column Names)
-selected_features = ["Listening Time (mins)", "Price_x", "Rating_x", "Number of Reviews_x"]  # Match model_training.py
-target_column = "Popularity Score"
+    # Load cosine similarity matrix
+    with open(cosine_sim_path, "rb") as f:
+        cosine_sim_matrix = pickle.load(f)
 
-# ✅ Check for missing columns
-missing_features = [col for col in selected_features if col not in data.columns]
-if missing_features:
-    raise KeyError(f"Columns not found in dataset: {missing_features}")
+    # -------------------------------
+    # Evaluate Clustering
+    # -------------------------------
+    print("🔍 Evaluating KMeans clustering...")
 
-X = data[selected_features].copy()
-y = data[target_column].values
+    sil_score = None
+    if "Cluster" in data.columns:
+        try:
+            from sklearn.decomposition import TruncatedSVD
 
-# ✅ Preprocessing
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+            with open(tfidf_vectorizer_path, "rb") as f:
+                tfidf_vectorizer = pickle.load(f)
 
-# ✅ Save Scaler
-os.makedirs("models", exist_ok=True)
-with open(scaler_path, "wb") as f:
-    pickle.dump(scaler, f)
+            tfidf_matrix = tfidf_vectorizer.transform(data["Description"].fillna(""))
+            svd = TruncatedSVD(n_components=50, random_state=42)
+            tfidf_reduced = svd.fit_transform(tfidf_matrix)
+            sil_score = silhouette_score(tfidf_reduced, data["Cluster"])
+            print(f"🔍 KMeans Silhouette Score: {sil_score:.4f}")
+        except Exception as e:
+            print("⚠️ Silhouette Score evaluation failed:", e)
+    else:
+        print("⚠️ 'Cluster' column not found. Skipping Silhouette Score.")
 
-# ✅ Train-Test Split
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.15, random_state=42)
+    # -------------------------------
+    # Content-Based RMSE Evaluation
+    # -------------------------------
+    print("📊 Calculating RMSE for Content-Based Similarity...")
 
-# ✅ Hyperparameter Grids
-param_grid = {
-    "Random Forest": {"n_estimators": [100, 200], "max_depth": [10, 20], "min_samples_split": [2, 5]},
-    "Gradient Boosting": {"n_estimators": [100, 200], "learning_rate": [0.05, 0.1], "max_depth": [3, 5]},
-    "XGBoost": {"n_estimators": [100, 200], "learning_rate": [0.05, 0.1], "max_depth": [3, 5]},
-    "LightGBM": {"n_estimators": [300, 500], "learning_rate": [0.01, 0.05], "max_depth": [5, 7]}
-}
+    possible_rating_cols = ['Ratings', 'Rating', 'Rating_y']
+    rating_col = next((col for col in possible_rating_cols if col in data.columns), None)
 
-# ✅ Model Selection
-best_model = None
-best_score = float("inf")
-best_model_name = None
+    if not rating_col:
+        raise ValueError("❌ No rating column found in dataset. Please check your CSV.")
 
-for model_name, params in param_grid.items():
-    print(f"🔍 Tuning {model_name}...")
-    
-    if model_name == "Random Forest":
-        model = RandomForestRegressor(random_state=42)
-    elif model_name == "Gradient Boosting":
-        model = GradientBoostingRegressor(random_state=42)
-    elif model_name == "XGBoost":
-        model = XGBRegressor(objective='reg:squarederror', random_state=42)
-    elif model_name == "LightGBM":
-        model = LGBMRegressor(random_state=42)
-    
-    grid_search = GridSearchCV(model, param_grid=params, cv=3, scoring="neg_root_mean_squared_error", n_jobs=-1)
-    grid_search.fit(X_train, y_train)
-    
-    best_model_temp = grid_search.best_estimator_
-    y_pred = best_model_temp.predict(X_test)
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+    true_ratings = data[rating_col].fillna(0).values
 
-    print(f"✅ Best RMSE for {model_name}: {rmse:.4f}")
-    
-    if rmse < best_score:
-        best_score = rmse
-        best_model = best_model_temp
-        best_model_name = model_name
+    row_sums = np.abs(cosine_sim_matrix).sum(axis=1)
+    row_sums[row_sums == 0] = 1e-8
 
-# ✅ Save Best Model
-with open(best_model_path, "wb") as f:
-    pickle.dump(best_model, f)
+    predicted_ratings = cosine_sim_matrix.dot(true_ratings) / row_sums
+    predicted_ratings = np.nan_to_num(predicted_ratings, nan=np.mean(true_ratings))
 
-print(f"🏆 Best Tuned Model: {best_model_name} (RMSE: {best_score:.4f})")
+    rmse_content = np.sqrt(mean_squared_error(true_ratings, predicted_ratings))
+    print(f"📊 RMSE for Content-Based Similarity: {rmse_content:.4f}")
+
+    # -------------------------------
+    # Hybrid RMSE Evaluation
+    # -------------------------------
+    print("🔀 Calculating RMSE for Hybrid Recommendations...")
+
+    rmse_hybrid = None
+    if "Cluster" in data.columns:
+        cluster_means = data.groupby("Cluster")[rating_col].transform("mean")
+        hybrid_pred = 0.5 * predicted_ratings + 0.5 * cluster_means.fillna(np.mean(true_ratings)).values
+        rmse_hybrid = np.sqrt(mean_squared_error(true_ratings, hybrid_pred))
+        print(f"🔀 RMSE for Hybrid Recommendations: {rmse_hybrid:.4f}")
+    else:
+        print("⚠️ Cluster information not found. Skipping hybrid RMSE.")
+
+    # -------------------------------
+    # Precision@5
+    # -------------------------------
+    print("📏 Calculating Precision@5...")
+
+    def precision_at_k(sim_matrix, true_ratings, k=5):
+        precision_scores = []
+        for idx, row in enumerate(sim_matrix):
+            similar_indices = row.argsort()[::-1][1:k+1]
+            relevant = sum(true_ratings[similar_indices] >= 4)
+            precision_scores.append(relevant / k)
+        return np.mean(precision_scores)
+
+    print("Books with rating >= 4:", (true_ratings >= 4).sum())
+
+    precision5 = precision_at_k(cosine_sim_matrix, true_ratings, k=5)
+    print(f"🎯 Precision@5: {precision5:.4f}")
+
+    # -------------------------------
+    # Save metrics
+    # -------------------------------
+    print("💾 Saving evaluation metrics...")
+
+    metrics = {
+        "Silhouette Score": round(sil_score, 4) if sil_score is not None else None,
+        "RMSE_Content": round(rmse_content, 4),
+        "RMSE_Hybrid": round(rmse_hybrid, 4) if rmse_hybrid is not None else None,
+        "Precision@5": round(precision5, 4)
+    }
+
+    metrics_df = pd.DataFrame([metrics])
+    os.makedirs(os.path.dirname(metrics_output_path), exist_ok=True)
+    metrics_df.to_csv(metrics_output_path, index=False)
+
+    print(f"✅ Metrics saved to {metrics_output_path}")
+
+if __name__ == "__main__":
+    evaluate_models()

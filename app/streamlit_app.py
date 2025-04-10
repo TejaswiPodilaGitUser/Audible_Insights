@@ -6,7 +6,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import os
 
-# Ensure correct paths for loading models
+# Set the base directory
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 def load_models():
@@ -26,8 +26,8 @@ def load_data():
     try:
         df = pd.read_csv(os.path.join(BASE_DIR, "data/processed/audible_catalog_processed.csv"))
 
-        required_columns = ["Book Name", "Author", "Rating_x", "Number of Reviews_x", 
-                            "Price_x", "Popularity Score", "Main Genre", "Top Rank", 
+        required_columns = ["Book Name", "Author", "Rating", "Number of Reviews", 
+                            "Price", "Main Genre", "Top Rank", 
                             "Is Free", "Is Audible", "Description"]
 
         missing_columns = [col for col in required_columns if col not in df.columns]
@@ -61,18 +61,27 @@ def main():
             df = df[df["Author"] == selected_author].copy()
 
         rating_range = st.slider("Select Rating Range", 0.0, 5.0, (0.0, 5.0), 0.1)
-        df = df[(df["Rating_x"] >= rating_range[0]) & (df["Rating_x"] <= rating_range[1])].copy()
+        df = df[(df["Rating"] >= rating_range[0]) & (df["Rating"] <= rating_range[1])].copy()
         
-        max_price = df["Price_x"].dropna().max() or 1
-        price_range = st.slider("Select Price Range", 0, int(max_price), (0, int(max_price)))
-        df = df[(df["Price_x"] >= price_range[0]) & (df["Price_x"] <= price_range[1])].copy()
-        
-        max_reviews = df["Number of Reviews_x"].dropna().max() or 1
-        reviews_range = st.slider("Select Number of Reviews", 0, int(max_reviews), (0, int(max_reviews)))
-        df = df[(df["Number of Reviews_x"] >= reviews_range[0]) & (df["Number of Reviews_x"] <= reviews_range[1])].copy()
-    
+        max_price = df["Price"].dropna().max()
+        max_price = int(max_price) if pd.notna(max_price) else 1
+        price_range = st.slider("Select Price Range", 0, max_price, (0, max_price))
+        df = df[(df["Price"] >= price_range[0]) & (df["Price"] <= price_range[1])].copy()
+
+        max_reviews = df["Number of Reviews"].dropna().max()
+        max_reviews = int(max_reviews) if pd.notna(max_reviews) else 1
+        reviews_range = st.slider("Select Number of Reviews", 0, max_reviews, (0, max_reviews))
+        df = df[(df["Number of Reviews"] >= reviews_range[0]) & (df["Number of Reviews"] <= reviews_range[1])].copy()
+
         selected_book = st.selectbox("Select a Book", df["Book Name"].dropna().unique())
-        book_details = df[df["Book Name"] == selected_book].iloc[0]
+        selected_book_df = df[df["Book Name"] == selected_book]
+
+        if selected_book_df.empty:
+            st.warning("Selected book details are missing. Try another book.")
+            st.stop()
+
+        book_details = selected_book_df.iloc[0]
+
     if df.empty:
         st.warning("No books match the selected filters. Try adjusting the filters.")
         st.stop()
@@ -81,8 +90,8 @@ def main():
     with col2:
 
         st.subheader(f"📖 **{book_details['Book Name']}** by {book_details['Author']}")
-        st.write(f"⭐ **Rating:** {book_details['Rating_x']} ({book_details['Number of Reviews_x']} reviews)")
-        st.write(f"💰 **Price:** ₹{book_details['Price_x']}")
+        st.write(f"⭐ **Rating:** {book_details['Rating']} ({book_details['Number of Reviews']} reviews)")
+        st.write(f"💰 **Price:** ₹{book_details['Price']}")
         st.write(f"📌 **Genre:** {book_details['Main Genre']}")
         st.write(f"🏆 **Top Rank:** #{int(book_details['Top Rank']) if not pd.isna(book_details['Top Rank']) else 'N/A'}")
         st.write(f"🎧 **Audible Exclusive:** {'Yes' if book_details['Is Audible'] else 'No'}")
@@ -114,11 +123,13 @@ def main():
 
         if similarities.size > 0:
             df["Similarity"] = similarities
-            recommendations = df.sort_values(by="Similarity", ascending=False).head(6)
+            recommendations = df.sort_values(by="Similarity", ascending=False)
+            recommendations = recommendations[recommendations["Book Name"] != selected_book]
+            recommendations = recommendations.head(6)
 
             st.subheader("📖 Recommended Books")
             for _, row in recommendations.iterrows():
-                st.write(f"**{row['Book Name']}** by {row['Author']} (⭐ {row['Rating_x']})")
+                st.write(f"**{row['Book Name']}** by {row['Author']} (⭐ {row['Rating']})")
         else:
             st.warning("No recommendations found. The book description may not contain recognizable words.")
 
