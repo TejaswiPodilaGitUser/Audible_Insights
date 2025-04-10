@@ -51,19 +51,21 @@ Refer to `deployment/aws_setup.md` for deployment steps.
 
 
 ## Exploratory Data Analysis (EDA)
-<img width="1652" alt="image" src="https://github.com/user-attachments/assets/18a53c18-c3a9-4335-bb60-bd785d862c69" />
+<img width="1607" alt="Screenshot 2025-04-10 at 10 43 21 PM" src="https://github.com/user-attachments/assets/155aad63-6e15-49a4-9374-db0558117877" />
 
-<img width="1591" alt="image" src="https://github.com/user-attachments/assets/a9054a43-cf62-4a7c-938e-da4861949644" />
+<img width="1647" alt="image" src="https://github.com/user-attachments/assets/1856788e-6d9a-4937-951f-9f06eb0f2a2d" />
 
-<img width="1045" alt="image" src="https://github.com/user-attachments/assets/94e0634e-6f38-4c1e-90c1-ee8ec21335fb" />
-
+<img width="1568" alt="image" src="https://github.com/user-attachments/assets/7871cf8f-e698-463b-9fdb-fce3a9fbf9e2" />
 
 ## Streamlit App
 
-<img width="1674" alt="image" src="https://github.com/user-attachments/assets/b7c04717-8d2f-486c-a2bd-9afe09d9ccb7" />
+<img width="1657" alt="image" src="https://github.com/user-attachments/assets/122f794d-1514-4bfc-b4ec-cda4031190ee" />
 
+<img width="1636" alt="image" src="https://github.com/user-attachments/assets/4d6cfd8b-dd1e-4000-a577-c490d1a90565" />
 
-<img width="1636" alt="image" src="https://github.com/user-attachments/assets/79a59242-60f1-458c-8a32-96285b2c639c" />
+<img width="1616" alt="image" src="https://github.com/user-attachments/assets/24686c7c-b774-4c73-8395-6cd24a76d90a" />
+
+<img width="1626" alt="image" src="https://github.com/user-attachments/assets/f8b8ddce-f02b-4063-ba11-517758b455a4" />
 
 
 ## AWS 
